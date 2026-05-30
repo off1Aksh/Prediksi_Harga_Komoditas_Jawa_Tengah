@@ -1,0 +1,9 @@
+Komoditas,RMSE (Rp),MAE (Rp),MAPE (%),Epoch Berhenti
+Bawang Merah,806.8,397.58,0.96,116
+Bawang Putih,359.73,152.02,0.36,63
+Beras,36.44,15.61,0.11,181
+Cabai Merah,1494.12,1043.21,2.62,51
+Cabai Rawit,1700.21,1017.28,2.53,51
+Daging Ayam,247.76,170.37,0.48,51
+Minyak Goreng,129.84,120.76,0.62,51
+Telur Ayam,173.12,105.8,0.39,51

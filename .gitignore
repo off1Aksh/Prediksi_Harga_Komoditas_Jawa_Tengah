@@ -1,0 +1,18 @@
+# Dependensi Node.js
+**/node_modules/
+node_modules/
+
+# Python Virtual Environment
+**/venv/
+venv/
+**/env/
+env/
+.venv/
+**/__pycache__/
+*.pyc
+
+# IDE & Sistem
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
