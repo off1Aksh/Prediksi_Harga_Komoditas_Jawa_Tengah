@@ -20,7 +20,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium mb-8">
             <span className="flex w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-            Dual-Branch LSTM Model
+            Univariate LSTM Model
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 tracking-tight mb-8">
             <span className="block">Prediksi Harga Komoditas</span>
@@ -51,18 +51,18 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard 
               icon={TrendingUp}
-              title="Akurasi Tinggi"
-              description="Menggunakan model Dual-Branch LSTM untuk memisahkan komoditas stabil dan volatil, menghasilkan metrik evaluasi yang superior."
+              title="Akurasi Tinggi (MAPE 0.86%)"
+              description="Menggunakan 8 Model Univariate LSTM independen dengan Window Size 30 dan 64 Unit LSTM untuk akurasi prediksi maksimal."
             />
             <FeatureCard 
               icon={Activity}
-              title="Real-time Data"
-              description="Integrasi API yang cepat untuk langsung memproses dan menampilkan data prediksi tren harga terkini tanpa jeda."
+              title="Upload Dinamis PIHPS"
+              description="Sistem terintegrasi langsung dengan format Excel mentah Pusat Informasi Harga Pangan Strategis (PIHPS) Nasional."
             />
             <FeatureCard 
               icon={Zap}
-              title="Hemat Bandwidth"
-              description="Optimasi transfer data menggunakan struktur request JSON yang minimalis menjamin efisiensi performa platform."
+              title="Dataset Pandemi 9 Tahun"
+              description="Dilatih menggunakan dataset ekstensif dari 2017 hingga 2026 yang terbukti tangguh memprediksi di masa krisis COVID-19."
             />
           </div>
         </div>
