@@ -2,10 +2,14 @@ import os
 import numpy as np
 import pandas as pd
 import joblib
+import json
+import io
+from PIL import Image
 # pyrefly: ignore [missing-import]
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from tensorflow.keras.models import load_model
+from tensorflow.keras.utils import img_to_array
 
 app = Flask(__name__)
 # Enable CORS for all domains, important for React frontend to connect
@@ -23,6 +27,8 @@ RAW_DATASET_PATH = os.path.join(BASE_DIR, "Dataset_2017_2026", "dataset_harga_ko
 # Global variables
 scaler_master = None
 models = {} # Dictionary untuk menyimpan 8 model Univariate
+vision_model = None
+vision_class_names = []
 df_raw = None        # Dataset dengan harga Rupiah asli (setelah LOCF)
 
 # Urutan kolom data (sama dengan di dataset):
@@ -61,7 +67,7 @@ def load_raw_dataset():
         print(f"Error memuat dataset RAW: {e}")
 
 def load_ai_assets():
-    global scaler_master, models
+    global scaler_master, models, vision_model, vision_class_names
     try:
         print(f"Loading Scaler Master dari: {SCALER_PATH}")
         scaler_master = joblib.load(SCALER_PATH)
@@ -73,6 +79,15 @@ def load_ai_assets():
             models[col] = load_model(model_path)
             
         print("Ke-8 Model Univariate berhasil dimuat secara terpisah.")
+        
+        # Load Vision Model
+        VISION_MODEL_PATH = os.path.join(BASE_DIR, "models_vision", "vision_model.keras")
+        CLASS_NAMES_PATH = os.path.join(BASE_DIR, "models_vision", "class_names.json")
+        if os.path.exists(VISION_MODEL_PATH) and os.path.exists(CLASS_NAMES_PATH):
+            vision_model = load_model(VISION_MODEL_PATH)
+            with open(CLASS_NAMES_PATH, "r") as f:
+                vision_class_names = json.load(f)
+            print("Model Computer Vision berhasil dimuat.")
 
     except Exception as e:
         print(f"Error memuat model/scaler: {e}")
@@ -269,6 +284,145 @@ def upload_excel():
         import traceback
         traceback.print_exc()
         return jsonify({"error": f"Gagal memproses Excel: {str(e)}"}), 500
+
+@app.route('/api/predict-image', methods=['POST'])
+def predict_image():
+    """
+    Endpoint untuk mendeteksi gambar komoditas dan langsung meramalkan harganya.
+    """
+    try:
+        if vision_model is None:
+            return jsonify({"error": "Vision Model belum dimuat oleh server."}), 500
+
+        if 'image' not in request.files:
+            return jsonify({"error": "Tidak ada file gambar yang diunggah"}), 400
+        
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({"error": "Nama file kosong"}), 400
+
+        # Membaca gambar ke dalam memori
+        img_bytes = file.read()
+        img = Image.open(io.BytesIO(img_bytes)).convert('RGB')
+        img = img.resize((224, 224))
+        
+        x = img_to_array(img)
+        x = np.expand_dims(x, axis=0)
+        
+        # Prediksi Gambar (Tidak perlu manual preprocess_input karena sudah tertanam di dalam model)
+        preds = vision_model.predict(x)
+        class_idx = np.argmax(preds[0])
+        confidence = float(preds[0][class_idx])
+        detected_class = vision_class_names[class_idx]
+        
+        # Jika tingkat keyakinan terlalu rendah (kurang dari 40%)
+        if confidence < 0.4:
+            return jsonify({
+                "error": "Gambar tidak dapat dikenali dengan pasti. Silakan foto ulang komoditas dengan lebih jelas.",
+                "confidence": confidence
+            }), 400
+
+        # Jika berhasil ditebak, panggil LSTM untuk meramalkan harganya
+        # Ambil data 30 hari terakhir dari df_raw
+        raw_data = df_raw[ORDERED_COLUMNS].tail(30).values.astype(float)
+        scaled_data = scaler_master.transform(raw_data)
+        
+        idx = ORDERED_COLUMNS.index(detected_class)
+        model_lstm = models[detected_class]
+        
+        current_window = scaled_data[:, idx].copy()
+        predictions_scaled = np.zeros((7, 8))
+        
+        for day in range(7):
+            in_data = current_window.reshape((1, 30, 1))
+            pred = model_lstm.predict(in_data, verbose=0)[0][0]
+            predictions_scaled[day, idx] = pred
+            current_window = np.append(current_window[1:], pred)
+            
+        final_forecast = scaler_master.inverse_transform(predictions_scaled)
+        final_forecast = np.round(final_forecast).astype(int)
+        
+        # Ekstrak harga 7 hari HANYA untuk komoditas yang difoto
+        commodity_forecast = final_forecast[:, idx].tolist()
+        
+        # Rapikan nama komoditas (misal: 'cabai_rawit' -> 'Cabai Rawit')
+        display_name = detected_class.replace("_", " ").title()
+        
+        # Ambil informasi tanggal dan harga aktual terakhir
+        import datetime
+        last_date_obj = df_raw.index[-1]
+        last_price = float(df_raw.iloc[-1][detected_class])
+        
+        last_date_str = last_date_obj.strftime('%d %b %Y')
+        next_dates = [(last_date_obj + datetime.timedelta(days=i)).strftime('%d %b %Y') for i in range(1, 8)]
+        
+        return jsonify({
+            "detected_commodity": detected_class,
+            "display_name": display_name,
+            "confidence": confidence,
+            "forecast": commodity_forecast,
+            "last_price": int(last_price) if not pd.isna(last_price) else 0,
+            "last_date": last_date_str,
+            "next_dates": next_dates
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Gagal memproses gambar: {str(e)}"}), 500
+
+@app.route('/api/predict-single/<komoditas>', methods=['GET'])
+def predict_single(komoditas):
+    """
+    Endpoint untuk meramalkan harga berdasarkan pilihan komoditas manual.
+    """
+    try:
+        if komoditas not in ORDERED_COLUMNS:
+            return jsonify({"error": "Komoditas tidak ditemukan"}), 400
+
+        # Ambil data 30 hari terakhir dari df_raw
+        raw_data = df_raw[ORDERED_COLUMNS].tail(30).values.astype(float)
+        scaled_data = scaler_master.transform(raw_data)
+        
+        idx = ORDERED_COLUMNS.index(komoditas)
+        model_lstm = models[komoditas]
+        
+        current_window = scaled_data[:, idx].copy()
+        predictions_scaled = np.zeros((7, 8))
+        
+        for day in range(7):
+            in_data = current_window.reshape((1, 30, 1))
+            pred = model_lstm.predict(in_data, verbose=0)[0][0]
+            predictions_scaled[day, idx] = pred
+            current_window = np.append(current_window[1:], pred)
+            
+        final_forecast = scaler_master.inverse_transform(predictions_scaled)
+        final_forecast = np.round(final_forecast).astype(int)
+        
+        commodity_forecast = final_forecast[:, idx].tolist()
+        display_name = komoditas.replace("_", " ").title()
+        
+        import datetime
+        last_date_obj = df_raw.index[-1]
+        last_price = float(df_raw.iloc[-1][komoditas])
+        
+        last_date_str = last_date_obj.strftime('%d %b %Y')
+        next_dates = [(last_date_obj + datetime.timedelta(days=i)).strftime('%d %b %Y') for i in range(1, 8)]
+        
+        return jsonify({
+            "detected_commodity": komoditas,
+            "display_name": display_name,
+            "confidence": 1.0, # Karena dipilih manual
+            "forecast": commodity_forecast,
+            "last_price": int(last_price) if not pd.isna(last_price) else 0,
+            "last_date": last_date_str,
+            "next_dates": next_dates
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Gagal memproses prediksi manual: {str(e)}"}), 500
 
 if __name__ == '__main__':
     # Pastikan file dijalankan di port 5000

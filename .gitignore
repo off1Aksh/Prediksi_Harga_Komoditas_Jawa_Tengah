@@ -16,3 +16,8 @@ env/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Dataset dan File Besar
+Dataset/gambar/
+*.zip
+*.rar
