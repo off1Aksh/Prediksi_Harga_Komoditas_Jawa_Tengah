@@ -356,6 +356,10 @@ def predict_image():
         last_date_str = last_date_obj.strftime('%d %b %Y')
         next_dates = [(last_date_obj + datetime.timedelta(days=i)).strftime('%d %b %Y') for i in range(1, 8)]
         
+        # Ambil data historis 30 hari untuk grafik mobile
+        historical_prices = df_raw[detected_class].tail(30).values.astype(int).tolist()
+        historical_dates_chart = df_raw.tail(30).index.strftime('%d/%m').tolist()
+        
         return jsonify({
             "detected_commodity": detected_class,
             "display_name": display_name,
@@ -363,7 +367,9 @@ def predict_image():
             "forecast": commodity_forecast,
             "last_price": int(last_price) if not pd.isna(last_price) else 0,
             "last_date": last_date_str,
-            "next_dates": next_dates
+            "next_dates": next_dates,
+            "historical_prices": historical_prices,
+            "historical_dates": historical_dates_chart
         }), 200
 
     except Exception as e:
@@ -409,6 +415,10 @@ def predict_single(komoditas):
         last_date_str = last_date_obj.strftime('%d %b %Y')
         next_dates = [(last_date_obj + datetime.timedelta(days=i)).strftime('%d %b %Y') for i in range(1, 8)]
         
+        # Ambil data historis 30 hari untuk grafik mobile
+        historical_prices = df_raw[komoditas].tail(30).values.astype(int).tolist()
+        historical_dates_chart = df_raw.tail(30).index.strftime('%d/%m').tolist()
+        
         return jsonify({
             "detected_commodity": komoditas,
             "display_name": display_name,
@@ -416,13 +426,50 @@ def predict_single(komoditas):
             "forecast": commodity_forecast,
             "last_price": int(last_price) if not pd.isna(last_price) else 0,
             "last_date": last_date_str,
-            "next_dates": next_dates
+            "next_dates": next_dates,
+            "historical_prices": historical_prices,
+            "historical_dates": historical_dates_chart
         }), 200
 
     except Exception as e:
         import traceback
         traceback.print_exc()
         return jsonify({"error": f"Gagal memproses prediksi manual: {str(e)}"}), 500
+
+@app.route('/api/history', methods=['GET'])
+def get_history():
+    """
+    Endpoint untuk mengambil data historis (Riwayat Harga 9 Tahun).
+    """
+    try:
+        komoditas = request.args.get('komoditas')
+        tahun = request.args.get('tahun')
+        bulan = request.args.get('bulan')
+
+        if not komoditas or not tahun or not bulan:
+            return jsonify({"error": "Parameter tidak lengkap"}), 400
+
+        if komoditas not in ORDERED_COLUMNS:
+            return jsonify({"error": "Komoditas tidak valid"}), 400
+
+        # Filter berdasarkan tahun dan bulan (df_raw.index sudah DatetimeIndex)
+        df_filtered = df_raw[(df_raw.index.year == int(tahun)) & (df_raw.index.month == int(bulan))]
+
+        if df_filtered.empty:
+            return jsonify({"error": "Data tidak ditemukan pada bulan dan tahun tersebut"}), 404
+
+        dates = df_filtered.index.strftime('%d/%m/%Y').tolist()
+        prices = df_filtered[komoditas].values.astype(int).tolist()
+
+        return jsonify({
+            "dates": dates,
+            "prices": prices
+        }), 200
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Gagal memproses riwayat: {str(e)}"}), 500
 
 if __name__ == '__main__':
     # Pastikan file dijalankan di port 5000

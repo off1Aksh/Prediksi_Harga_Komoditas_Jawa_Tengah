@@ -1,9 +1,0 @@
-Komoditas,Grup,RMSE_Univariate,RMSE_Multivariate,MAPE_Univariate,MAPE_Multivariate,Pemenang_RMSE,Pemenang_MAPE
-Bawang Merah,Grup3 (B.Merah+),788.08,790.61,0.96,1.01,Univariate,Univariate
-Bawang Putih,Grup1 (Beras+),358.21,460.09,0.36,0.66,Univariate,Univariate
-Beras,Grup1 (Beras+),54.37,77.96,0.31,0.49,Univariate,Univariate
-Cabai Merah,Grup2 (Cabai),1338.57,1345.18,1.82,1.88,Univariate,Univariate
-Cabai Rawit,Grup2 (Cabai),1675.36,1689.81,2.25,2.51,Univariate,Univariate
-Daging Ayam,Grup3 (B.Merah+),223.41,287.92,0.4,0.67,Univariate,Univariate
-Minyak Goreng,Grup3 (B.Merah+),42.43,37.89,0.15,0.12,Multivariate,Multivariate
-Telur Ayam,Grup1 (Beras+),163.0,208.55,0.34,0.6,Univariate,Univariate

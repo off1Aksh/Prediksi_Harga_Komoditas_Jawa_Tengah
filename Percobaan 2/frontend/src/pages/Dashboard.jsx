@@ -148,9 +148,22 @@ const Dashboard = () => {
       chartData[29].prediksi = chartData[29].historis;
 
       // Data Prediksi (7 hari)
+      const lastDateStr = historicalDates[29];
+      const lastDateObj = lastDateStr ? new Date(lastDateStr) : new Date();
+
       for (let i = 0; i < 7; i++) {
+        const nextDate = new Date(lastDateObj);
+        nextDate.setDate(lastDateObj.getDate() + i + 1);
+        
+        const day = nextDate.getDate().toString().padStart(2, '0');
+        const month = (nextDate.getMonth() + 1).toString().padStart(2, '0');
+        const nextDateLabel = `${day}/${month}`;
+        
+        const fullDateStr = nextDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
         chartData.push({
-          day: `H+${i + 1}`,
+          day: nextDateLabel,
+          fullDate: fullDateStr,
           historis: null,
           prediksi: forecastData[i][selectedCommodity],
         });
@@ -312,7 +325,7 @@ const Dashboard = () => {
 
                     return (
                       <div key={index} className="flex justify-between items-center p-3 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-100">
-                        <span className="font-medium text-gray-700">H+{index + 1}</span>
+                        <span className="font-medium text-gray-700">{chartData[30 + index]?.fullDate || `H+${index + 1}`}</span>
                         <div className="text-right">
                           <p className="font-bold text-gray-900">{formatRupiah(predValue)}</p>
                           <p className={`text-xs font-medium mt-1 ${isUp ? 'text-red-500' : 'text-emerald-500'}`}>
