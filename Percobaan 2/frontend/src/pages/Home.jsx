@@ -14,7 +14,7 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
 
 const Home = () => {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -15 }}
@@ -34,7 +34,7 @@ const Home = () => {
             <span className="block text-emerald-600">Lebih Akurat & Cerdas</span>
           </h1>
           <p className="max-w-2xl mx-auto text-xl text-gray-600 mb-10 leading-relaxed">
-            Platform prediktif PanganPredict menggunakan arsitektur deep learning mutakhir untuk memberikan wawasan harga pangan di masa depan dengan presisi tinggi.
+            PanganPredict menggunakan arsitektur deep learning untuk memberikan prediksi harga pangan di Jawa Tengah dengan Akurasi tinggi.
           </p>
           <div className="flex justify-center gap-4 text-center">
             <Link
