@@ -1,0 +1,4 @@
+config,mean_accuracy,std_accuracy,mean_f1_macro,std_f1_macro,mean_precision,std_precision,mean_recall,std_recall,mean_epochs,mean_val_loss,total_time_seconds
+aug=minimal,0.9438,0.0216,0.9438,0.0217,0.9459,0.0213,0.9437,0.0217,37.8,0.1522,307.8
+aug=baseline,0.9375,0.0147,0.9372,0.015,0.9416,0.0118,0.9375,0.0147,36.8,0.1646,335.1
+aug=enhanced,0.935,0.0215,0.9349,0.0216,0.9375,0.0203,0.935,0.0215,36.4,0.1628,339.5

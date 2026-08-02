@@ -1,0 +1,51 @@
+============================================================
+RINGKASAN HYPERPARAMETER TUNING MOBILENETV2
+Stratified K-Fold Cross-Validation (Control Variable Method)
+============================================================
+
+Dataset      : /kaggle/input/datasets/aksh889/gambar-balanced/gambar_balanced
+K-Fold       : 5
+Seed         : 42
+Image Size   : (224, 224)
+Total Waktu  : 67.2 menit (1.1 jam)
+
+KONFIGURASI TERBAIK (FINAL):
+----------------------------------------
+  learning_rate: 0.001
+  batch_size: 16
+  dropout_rate: 0.3
+  epochs: 50
+  augmentation: enhanced
+
+HASIL PER TAHAP:
+----------------------------------------
+
+  Tahap 0: Baseline:
+    Terbaik   : baseline
+    Accuracy  : 0.9388 ± 0.0190
+    F1 Macro  : 0.9381 ± 0.0194
+
+  Tahap 1: Learning Rate:
+    Terbaik   : lr=1e-3
+    Accuracy  : 0.9350 ± 0.0151
+    F1 Macro  : 0.9347 ± 0.0154
+
+  Tahap 2: Batch Size:
+    Terbaik   : bs=16
+    Accuracy  : 0.9463 ± 0.0210
+    F1 Macro  : 0.9460 ± 0.0212
+
+  Tahap 3: Dropout Rate:
+    Terbaik   : dropout=0.3
+    Accuracy  : 0.9513 ± 0.0162
+    F1 Macro  : 0.9510 ± 0.0163
+
+  Tahap 4: Max Epochs:
+    Terbaik   : epochs=50
+    Accuracy  : 0.9450 ± 0.0195
+    F1 Macro  : 0.9446 ± 0.0200
+
+  Tahap 5: Data Augmentation:
+    Terbaik   : aug=enhanced
+    Accuracy  : 0.9475 ± 0.0249
+    F1 Macro  : 0.9472 ± 0.0252

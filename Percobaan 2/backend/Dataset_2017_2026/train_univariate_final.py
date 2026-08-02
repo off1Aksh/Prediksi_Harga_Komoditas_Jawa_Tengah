@@ -29,8 +29,18 @@ tf.random.set_seed(42)
 # ============================================================
 EPOCHS = 1500
 BATCH_SIZE = 32
-WINDOW_SIZE = 30
-LSTM_UNITS = 32 # Sesuai dengan pengujian Univariate sebelumnya yang paling optimal
+
+# Hasil dari Sequential Holdout Tuning (216 Kombinasi)
+BEST_PARAMS = {
+    'bawang_merah': {'window': 30, 'lstm': 64},
+    'bawang_putih': {'window': 7, 'lstm': 128},
+    'beras': {'window': 14, 'lstm': 128},
+    'cabai_merah': {'window': 30, 'lstm': 128},
+    'cabai_rawit': {'window': 30, 'lstm': 32},
+    'daging_ayam': {'window': 30, 'lstm': 64},
+    'minyak_goreng': {'window': 30, 'lstm': 128},
+    'telur_ayam': {'window': 30, 'lstm': 64}
+}
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 backend_dir = os.path.join(script_dir, "..")
@@ -62,9 +72,13 @@ print("1. Memuat dataset...")
 # Load dataset mentah (Rupiah asli)
 raw_path = os.path.join(script_dir, "dataset_harga_komoditas_2017_2026.csv")
 df_raw = pd.read_csv(raw_path)
-df_raw["tanggal"] = pd.to_datetime(df_raw["tanggal"], format="%d/ %m/ %Y", errors="coerce")
-if df_raw["tanggal"].isnull().all():
-    df_raw["tanggal"] = pd.to_datetime(df_raw["tanggal"])
+
+# Konversi tanggal dengan aman (seperti di app.py)
+parsed_dates = pd.to_datetime(df_raw["tanggal"], format="%d/ %m/ %Y", errors="coerce")
+if parsed_dates.isnull().all():
+    df_raw["tanggal"] = pd.to_datetime(df_raw["tanggal"], errors="coerce")
+else:
+    df_raw["tanggal"] = parsed_dates
 
 kolom_harga = [col for col in df_raw.columns if col != "tanggal"]
 for col in kolom_harga:
@@ -109,7 +123,7 @@ def create_sequences(data_col, window_size):
 # TRAINING 8 MODEL UNIVARIATE (FULL DATASET)
 # ============================================================
 print("\n3. Memulai proses training 8 Model Univariate...")
-print(f"Konfigurasi: Window={WINDOW_SIZE}, Max Epochs={EPOCHS}, LSTM Units={LSTM_UNITS}")
+print(f"Max Epochs={EPOCHS}, Batch Size={BATCH_SIZE}")
 print("Catatan: Training ini menggunakan 100% data (tanpa validation split) untuk akurasi maksimal di production.")
 print("-" * 50)
 
@@ -119,17 +133,22 @@ print("-" * 50)
 early_stop = EarlyStopping(monitor='loss', patience=20, restore_best_weights=True, verbose=1, start_from_epoch=100)
 
 for idx, col_name in enumerate(ORDERED_COLUMNS):
+    # Ambil parameter khusus untuk komoditas ini
+    window_size = BEST_PARAMS[col_name]['window']
+    lstm_units = BEST_PARAMS[col_name]['lstm']
+    
     print(f"\n> Training Model [{idx+1}/8]: {LABEL_MAP[col_name]}")
+    print(f"  Konfigurasi Kustom -> Window: {window_size}, LSTM: {lstm_units}")
     
     # Ambil kolom spesifik dari data yang sudah di-scale
     col_data = scaled_data[:, idx].reshape(-1, 1)
     
     # Buat sekuens
-    X_train, Y_train = create_sequences(col_data, WINDOW_SIZE)
+    X_train, Y_train = create_sequences(col_data, window_size)
     
-    # Bangun Arsitektur Univariate
+    # Bangun Arsitektur Univariate Spesifik
     model = Sequential([
-        LSTM(LSTM_UNITS, activation='tanh', input_shape=(WINDOW_SIZE, 1)),
+        LSTM(lstm_units, activation='tanh', input_shape=(window_size, 1)),
         Dense(1)
     ])
     model.compile(optimizer='adam', loss='mse')

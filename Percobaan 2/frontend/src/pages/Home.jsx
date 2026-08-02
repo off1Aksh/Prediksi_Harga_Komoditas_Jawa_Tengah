@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { TrendingUp, Activity, Zap, ArrowRight } from 'lucide-react';
 
 const FeatureCard = ({ icon: Icon, title, description }) => (
@@ -13,7 +14,13 @@ const FeatureCard = ({ icon: Icon, title, description }) => (
 
 const Home = () => {
   return (
-    <div className="flex flex-col min-h-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -15 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col min-h-full"
+    >
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-white -z-10" />
@@ -30,7 +37,7 @@ const Home = () => {
             Platform prediktif PanganPredict menggunakan arsitektur deep learning mutakhir untuk memberikan wawasan harga pangan di masa depan dengan presisi tinggi.
           </p>
           <div className="flex justify-center gap-4 text-center">
-            <Link 
+            <Link
               to="/dashboard"
               className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-lg hover:shadow-emerald-500/30 transition-all gap-2"
             >
@@ -41,7 +48,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -66,8 +73,8 @@ const Home = () => {
             />
           </div>
         </div>
-      </section>
-    </div>
+      </section> */}
+    </motion.div>
   );
 };
 

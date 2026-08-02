@@ -1,0 +1,6 @@
+config,fold,accuracy,f1_macro,precision_macro,recall_macro,epochs_run,best_val_loss,best_val_acc,time_seconds
+baseline,1,0.9125,0.9115,0.9161,0.9125,28,0.1718,0.9312,55.5
+baseline,2,0.9625,0.9623,0.9625,0.9625,30,0.0985,0.9625,53.8
+baseline,3,0.9313,0.9302,0.9317,0.9313,30,0.1438,0.9438,55.2
+baseline,4,0.95,0.95,0.9505,0.95,25,0.135,0.9625,47.3
+baseline,5,0.9375,0.9364,0.9434,0.9375,27,0.2076,0.9375,50.3

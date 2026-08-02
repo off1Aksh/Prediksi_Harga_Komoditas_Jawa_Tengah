@@ -4,6 +4,10 @@ import pandas as pd
 import joblib
 import json
 import io
+import jwt
+import datetime
+from dotenv import load_dotenv
+from functools import wraps
 from PIL import Image
 # pyrefly: ignore [missing-import]
 from flask import Flask, request, jsonify
@@ -11,7 +15,42 @@ from flask_cors import CORS
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import img_to_array
 
+# Load environment variables
+load_dotenv()
+
 app = Flask(__name__)
+# Enable CORS for all domains
+CORS(app)
+
+# Authentication Configuration
+app.config['SECRET_KEY'] = os.getenv('JWT_SECRET', 'my_skripsi_jwt')
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
+
+# Token Verification Decorator
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        # Check header
+        if 'Authorization' in request.headers:
+            auth_header = request.headers['Authorization']
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(" ")[1]
+        
+        if not token:
+            return jsonify({'error': 'Token otentikasi tidak ditemukan. Akses ditolak.'}), 401
+            
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            # In simple terms, if decode doesn't throw exception, token is valid.
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Sesi telah habis (Token Expired). Silakan login ulang.'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Token tidak valid. Akses ditolak.'}), 401
+            
+        return f(*args, **kwargs)
+    return decorated
 # Enable CORS for all domains, important for React frontend to connect
 CORS(app)
 
@@ -36,6 +75,18 @@ ORDERED_COLUMNS = [
     'bawang_merah', 'bawang_putih', 'beras', 'cabai_merah',
     'cabai_rawit', 'daging_ayam', 'minyak_goreng', 'telur_ayam'
 ]
+
+# Hasil tuning parameter terbaik (Window Size, LSTM Units)
+BEST_PARAMS = {
+    'bawang_merah': {'window': 30, 'lstm': 64},
+    'bawang_putih': {'window': 7, 'lstm': 128},
+    'beras': {'window': 14, 'lstm': 128},
+    'cabai_merah': {'window': 30, 'lstm': 128},
+    'cabai_rawit': {'window': 30, 'lstm': 32},
+    'daging_ayam': {'window': 30, 'lstm': 64},
+    'minyak_goreng': {'window': 30, 'lstm': 128},
+    'telur_ayam': {'window': 30, 'lstm': 64}
+}
 
 def load_raw_dataset():
     """Membaca dataset asli, membersihkan, dan menerapkan LOCF."""
@@ -153,14 +204,15 @@ def predict():
         # 2. Proses Iterative Forecasting (7 Hari) untuk MASING-MASING komoditas
         for idx, col in enumerate(ORDERED_COLUMNS):
             model = models[col]
+            window_size = BEST_PARAMS[col]['window']
             
-            # Ambil data 30 hari historis (HANYA untuk komoditas ini) -> bentuknya (30,)
-            current_window = scaled_data[:, idx].copy()
+            # Ambil data historis (HANYA untuk komoditas ini) sesuai window_size
+            current_window = scaled_data[-window_size:, idx].copy()
             
             # Prediksi maju 7 hari
             for day in range(7):
-                # Reshape untuk input LSTM: (batch_size=1, window_size=30, features=1)
-                in_data = current_window.reshape((1, 30, 1))
+                # Reshape untuk input LSTM: (batch_size=1, window_size, features=1)
+                in_data = current_window.reshape((1, window_size, 1))
                 
                 # Prediksi nilai 1 hari ke depan (masih dalam skala 0-1)
                 pred = model.predict(in_data, verbose=0)[0][0]
@@ -187,7 +239,28 @@ def predict():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/login', methods=['POST'])
+def login():
+    """
+    Endpoint untuk otentikasi admin.
+    """
+    auth_data = request.get_json()
+    if not auth_data or not auth_data.get('username') or not auth_data.get('password'):
+        return jsonify({'error': 'Username dan Password wajib diisi'}), 400
+        
+    if auth_data.get('username') == ADMIN_USERNAME and auth_data.get('password') == ADMIN_PASSWORD:
+        # Generate token berlaku 24 jam
+        token = jwt.encode({
+            'user': auth_data.get('username'),
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+        }, app.config['SECRET_KEY'], algorithm="HS256")
+        
+        return jsonify({'token': token}), 200
+    
+    return jsonify({'error': 'Username atau Password salah!'}), 401
+
 @app.route('/api/upload-excel', methods=['POST'])
+@token_required
 def upload_excel():
     global df_raw
     try:
@@ -329,12 +402,13 @@ def predict_image():
         
         idx = ORDERED_COLUMNS.index(detected_class)
         model_lstm = models[detected_class]
+        window_size = BEST_PARAMS[detected_class]['window']
         
-        current_window = scaled_data[:, idx].copy()
+        current_window = scaled_data[-window_size:, idx].copy()
         predictions_scaled = np.zeros((7, 8))
         
         for day in range(7):
-            in_data = current_window.reshape((1, 30, 1))
+            in_data = current_window.reshape((1, window_size, 1))
             pred = model_lstm.predict(in_data, verbose=0)[0][0]
             predictions_scaled[day, idx] = pred
             current_window = np.append(current_window[1:], pred)
@@ -392,12 +466,13 @@ def predict_single(komoditas):
         
         idx = ORDERED_COLUMNS.index(komoditas)
         model_lstm = models[komoditas]
+        window_size = BEST_PARAMS[komoditas]['window']
         
-        current_window = scaled_data[:, idx].copy()
+        current_window = scaled_data[-window_size:, idx].copy()
         predictions_scaled = np.zeros((7, 8))
         
         for day in range(7):
-            in_data = current_window.reshape((1, 30, 1))
+            in_data = current_window.reshape((1, window_size, 1))
             pred = model_lstm.predict(in_data, verbose=0)[0][0]
             predictions_scaled[day, idx] = pred
             current_window = np.append(current_window[1:], pred)

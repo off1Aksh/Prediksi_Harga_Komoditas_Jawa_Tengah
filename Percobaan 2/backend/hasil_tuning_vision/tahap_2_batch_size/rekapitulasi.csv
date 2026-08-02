@@ -1,0 +1,4 @@
+config,mean_accuracy,std_accuracy,mean_f1_macro,std_f1_macro,mean_precision,std_precision,mean_recall,std_recall,mean_epochs,mean_val_loss,total_time_seconds
+bs=16,0.9463,0.021,0.946,0.0212,0.9477,0.02,0.9463,0.021,21.4,0.15,227.0
+bs=32,0.9438,0.0238,0.9434,0.0242,0.9472,0.0203,0.9437,0.0238,24.8,0.1668,240.3
+bs=64,0.9387,0.012,0.9381,0.0127,0.9418,0.0084,0.9387,0.012,29.8,0.1722,278.8

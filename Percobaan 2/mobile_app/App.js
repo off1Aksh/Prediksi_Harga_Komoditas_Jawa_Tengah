@@ -5,9 +5,9 @@ import axios from 'axios';
 import { LineChart } from 'react-native-chart-kit';
 import { Leaf, Menu, X, Home, Calendar, Search } from 'lucide-react-native';
 
-const API_URL_IMAGE = "http://192.168.1.59:5000/api/predict-image";
-const API_URL_MANUAL = "http://192.168.1.59:5000/api/predict-single";
-const API_URL_HISTORY = "http://192.168.1.59:5000/api/history";
+const API_URL_IMAGE = "http://192.168.18.138:5000/api/predict-image";
+const API_URL_MANUAL = "http://192.168.18.138:5000/api/predict-single";
+const API_URL_HISTORY = "http://192.168.18.138:5000/api/history";
 
 const COMMODITIES = [
   { id: 'bawang_merah', name: 'Bawang Merah' },
