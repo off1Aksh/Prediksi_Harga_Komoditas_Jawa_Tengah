@@ -1,2 +1,0 @@
-config,mean_accuracy,std_accuracy,mean_f1_macro,std_f1_macro,mean_precision,std_precision,mean_recall,std_recall,mean_epochs,mean_val_loss,total_time_seconds
-baseline,0.9388,0.019,0.9381,0.0194,0.9408,0.0178,0.9388,0.019,28.0,0.1513,262.1

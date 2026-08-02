@@ -1,4 +1,0 @@
-config,mean_accuracy,std_accuracy,mean_f1_macro,std_f1_macro,mean_precision,std_precision,mean_recall,std_recall,mean_epochs,mean_val_loss,total_time_seconds
-epochs=50,0.945,0.0195,0.9447,0.0199,0.9479,0.0175,0.945,0.0195,34.6,0.1612,314.1
-epochs=30,0.9362,0.0081,0.9356,0.0089,0.9399,0.007,0.9362,0.0081,30.0,0.1659,280.0
-epochs=15,0.9225,0.02,0.922,0.0209,0.9267,0.0176,0.9225,0.02,15.0,0.2024,169.4

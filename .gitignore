@@ -17,7 +17,54 @@ env/
 .DS_Store
 Thumbs.db
 
-# Dataset dan File Besar
+# Dataset Gambar & Arsip Besar
 Dataset/gambar/
+Dataset/gambar_balanced/
+Dataset/harga/
 *.zip
 *.rar
+
+# Dokumen Akademik (kecuali Laporan/)
+Proposal/
+Referensi/
+PENELITIAN/
+grafik_komoditas/
+Grafik_Evaluasi_LSTM/
+14-Pedoman-Penyusunan-TA-Skripsi.pdf
+proposal_text.txt
+
+# Model Backup & Evaluasi Lama
+**/models_univariate_backup/
+**/vision_model_lama.keras
+**/hasil_evaluasi_skenario.csv
+
+# Backend: Hasil Tuning & Eksperimen
+Percobaan 2/backend/hasil_tuning_vision/
+Percobaan 2/backend/hasil_tuning_vision_final/
+Percobaan 2/backend/Dataset_2017_2026/hasil_tuning/
+Percobaan 2/backend/Dataset_2017_2026/hasil_eksperimen_2/
+Percobaan 2/backend/Dataset_2017_2026/dataset_preprocessed.csv
+
+# Backend: Script Training & Notebook (tidak perlu di server)
+Percobaan 2/backend/find_best_lstm_params.py
+Percobaan 2/backend/tune_vision_kfold.py
+Percobaan 2/backend/train_vision.py
+Percobaan 2/backend/train_vision_final.py
+Percobaan 2/backend/train_final_models.py
+Percobaan 2/backend/balance_dataset.py
+Percobaan 2/backend/*.ipynb
+Percobaan 2/backend/Dataset_2017_2026/eksperimen_skripsi.py
+Percobaan 2/backend/Dataset_2017_2026/pre-processing.py
+Percobaan 2/backend/Dataset_2017_2026/train_univariate_final.py
+Percobaan 2/backend/Dataset_2017_2026/transpose.py
+
+# Backend: Plot evaluasi model
+Percobaan 2/backend/models_vision/*.png
+Percobaan 2/backend/models_vision/classification_report.txt
+
+# File Office Sementara
+~$*.docx
+*.tmp
+
+# Kredensial (keamanan)
+.env
