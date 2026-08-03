@@ -57,7 +57,7 @@ const Dashboard = () => {
       const formData = new FormData();
       formData.append('file', file);
       const token = localStorage.getItem('adminToken');
-      const response = await axios.post('http://localhost:5000/api/upload-excel', formData, {
+      const response = await axios.post('/api/upload-excel', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
@@ -83,7 +83,7 @@ const Dashboard = () => {
     e.preventDefault();
     setLoginError('');
     try {
-      const response = await axios.post('http://localhost:5000/api/login', { username, password });
+      const response = await axios.post('/api/login', { username, password });
       localStorage.setItem('adminToken', response.data.token);
       setShowLoginModal(false);
       setUsername('');
@@ -101,7 +101,7 @@ const Dashboard = () => {
       setError(null);
 
       // 1. Ambil data aktual (Rupiah) dari backend
-      const resLatest = await fetch('http://localhost:5000/api/latest-data');
+      const resLatest = await fetch('/api/latest-data');
       if (!resLatest.ok) throw new Error('Gagal mengambil data historis (latest-data)');
       const dataLatest = await resLatest.json();
 
@@ -109,7 +109,7 @@ const Dashboard = () => {
       setHistoricalDates(dataLatest.dates || []);
 
       // 2. Minta Prediksi (backend akan menggunakan data preprocessed internal)
-      const response = await fetch('http://localhost:5000/api/predict', {
+      const response = await fetch('/api/predict', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
