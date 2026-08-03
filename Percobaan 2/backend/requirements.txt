@@ -3,8 +3,9 @@ flask-cors
 numpy
 pandas
 joblib
-tensorflow==2.15.0
-scikit-learn
+tensorflow==2.21.0
+keras==3.13.2
+scikit-learn==1.8.0
 PyJWT
 python-dotenv
 Pillow
