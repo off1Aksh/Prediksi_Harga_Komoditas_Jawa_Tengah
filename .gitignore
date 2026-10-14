@@ -17,14 +17,11 @@ env/
 .DS_Store
 Thumbs.db
 
-# Dataset Gambar & Arsip Besar
-Dataset/gambar/
-Dataset/gambar_balanced/
-Dataset/harga/
-*.zip
-*.rar
-
-# Dokumen Akademik (kecuali Laporan/)
+# Dokumen Akademik, PDF, Docx, Surat, Lembar Kontrol, dll
+*.pdf
+*.docx
+*.doc
+*.txt
 Proposal/
 Referensi/
 PENELITIAN/
@@ -32,6 +29,16 @@ grafik_komoditas/
 Grafik_Evaluasi_LSTM/
 14-Pedoman-Penyusunan-TA-Skripsi.pdf
 proposal_text.txt
+
+# Folder Eksperimen / Mobile App
+mobile_app/
+
+# Dataset Gambar & Arsip Besar
+Dataset/gambar/
+Dataset/gambar_balanced/
+Dataset/harga/
+*.zip
+*.rar
 
 # Model Backup & Evaluasi Lama
 **/models_univariate_backup/
